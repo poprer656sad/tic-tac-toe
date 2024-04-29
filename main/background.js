@@ -9,7 +9,7 @@ const code_key = {
   0: "",
   1: "x",
   4: "o"
-}
+};
 
 
 (async () => {
@@ -33,61 +33,55 @@ let computer_player = new ComputerPlayer(orchestrator);
 
 var player_piece = "";
 
-ipcMain.on("player_move", (event, arg) => {
+ipcMain.on("BOARD:PLAYER_MOVE", (event, arg) => {
+  console.log("UPDATE PLAYER POSITION:", arg);
   if(orchestrator.won){
-    event.reply("won", code_key[orchestrator.CheckWin()]);
+    event.reply("UPDATE:OVER", code_key[orchestrator.CheckWin()]);
     return
   }
   orchestrator.PlaceMove(arg, player_piece);
-  event.reply("update_positions", orchestrator.state.map(val => {code_key[val]}));
+  event.reply("UPDATE:POSITIONS", orchestrator.state.map(val => code_key[val]));
 
   orchestrator.checkTie();
   if (orchestrator.won){
-    event.reply("won", code_key[orchestrator.CheckWin()]);
+    event.reply("", code_key[orchestrator.CheckWin()]);
     return;
   }
   
   let computer_move = computer_player.Turn(arg);
+  console.log("UPDATE COMPUTER POSITION:", computer_move);
   // orchestrator.PlaceMove(computer_move, computer_player.piece);
 
-  event.reply("update_positions", orchestrator.state.map(val => {code_key[val]}));
+  event.reply("UPDATE:POSITIONS", orchestrator.state.map(val => code_key[val]));
   orchestrator.checkTie();
   if (orchestrator.won){
-    event.reply("won", code_key[orchestrator.CheckWin()]);
+    event.reply("UPDATE:OVER", code_key[orchestrator.CheckWin()]);
     return;
   }
 })
 
-ipcMain.on("get_positions", (event, arg) => {
-  event.reply("update_positions", orchestrator.state.map(val => {
-    switch(val){
-      case 0:
-        return ""
-      case 1:
-        return "x"
-      case 4:
-        return "o"
-    }
-  }));
+ipcMain.on("BOARD:GET_POS", (event, arg) => {
+  console.log("ORCHESTRATOR POSITION: ", orchestrator.state)
+  event.reply("UPDATE:POSITIONS", orchestrator.state.map(val => code_key[val]));
 })
 
-ipcMain.on("player_value", (event, arg) => {
-  console.log("player piece: ", arg);
+ipcMain.on("GAME:PLAYER_PIECE", (event, arg) => {
+  console.log("SETTING USER PIECE:", arg);
   player_piece = arg;
   let computer_piece = arg == "x" ? "o" : "x";
   computer_player.setPiece(computer_piece);
   
 });
 
-ipcMain.on("get_saved_games", (event, arg) => {
-  event.reply("saved_games", fs.readdirSync(__dirname + "\\saved"));
+ipcMain.on("GAME:GET_SAVED", (event, arg) => {
+  event.reply("UPDATE:SAVED_GAMES", fs.readdirSync(__dirname + "\\saved"));
 })
 
-ipcMain.on("load_game", (event, arg) => {
+ipcMain.on("GAME:LOAD", (event, arg) => {
   setTimeout(()=>{
     let fin = fs.readFileSync(__dirname + `\\saved\\${arg}`, 'utf8');
     let game_obj = JSON.parse(fin);
-    event.reply("load_game", fin);
+    event.reply("UPDATE:LOAD", fin);
   
     computer_player.setPiece(game_obj.computer_piece);
     orchestrator.state = game_obj.positions;
@@ -95,14 +89,16 @@ ipcMain.on("load_game", (event, arg) => {
     orchestrator.id = game_obj.id;
     orchestrator.won = game_obj.won;
 
+    event.reply("UPDATE:POSITIONS", orchestrator.state.map(val => code_key[val]));
+
     if(orchestrator.won){
-      event.reply("won", fin)
+      event.reply("UPDATE:OVER", code_key[orchestrator.CheckWin()])
     }
   },1000)
   
 })
 
-ipcMain.on("save_game", (event, arg) => {
+ipcMain.on("GAME:SAVE", (event, arg) => {
   fs.writeFileSync(__dirname + `\\saved\\saved_${orchestrator.id}.json`,
     JSON.stringify({
         id: orchestrator.id,

@@ -1,7 +1,6 @@
 export default class ComputerPlayer {
     constructor(instance) {
         this.orchInst = instance;
-        this.nextmove = -1;
         this.compWinCons = [
             [0, 4, 8],
             [6, 4, 2],
@@ -31,102 +30,108 @@ export default class ComputerPlayer {
     }
 
     Turn(pair) {
+        let move = -1;
         this.updateOpponentMoves(pair);
-        let move = this.checkImmediateWin();
+        if (this.orchInst.AvailableMoves().length == 0){
+            return -1
+        }
+        move = this.checkImmediateWin();
         if (move != -1){
             return move
         }
-        this.checkNearDeath(pair);
+        move = this.checkNearDeath(pair);
+        if (move != -1){
+            return move
+        }
+        
         move = this.makeMove();
-        this.updateSelfMoves(move);
         return move;
     }
 
     updateOpponentMoves(pair) {
-        const newWinCon = [];
-        let counter = 0;
-        for (const con of this.compWinCons) {
-            let canUse = true;
-            for (const point of con) {
-                if (!canUse) continue;
-                if (point === pair) {
-                    canUse = false;
-                    continue;
-                }
-            }
-            if (canUse) {
-                newWinCon[counter++] = [...con];
+        // update computer win cons
+
+        for (let wincon of this.playerWinCons) {
+            if (wincon.includes(pair)){
+                wincon.splice(wincon.indexOf(pair), 1);
             }
         }
-        this.compWinCons = newWinCon;
 
-        for (const con of this.compWinCons) {
-            console.log("post update comp win cons: " + con.length);
+        // update player win cons
+        for (let player_ind = this.compWinCons.length; player_ind > 0; player_ind--) {
+            if (wincon.includes(pair)){
+                this.compWinCons.splice(player_ind, 1);
+            }
         }
     }
 
-    updateSelfMoves(pair) {
-        const newWinCon = [];
-        let counter = 0;
-        for (const con of this.playerWinCons) {
-            let canUse = true;
-            for (const point of con) {
-                if (!canUse) continue;
-                if (point === pair) {
-                    canUse = false;
-                    continue;
-                }
-            }
-            if (canUse) {
-                newWinCon[counter++] = [...con];
-            }
-        }
-        this.playerWinCons = newWinCon;
-    }
+    checkNearDeath() {
+        // const opponentMoves = this.orchInst.PlacedMovesOpponent(this.piece);
+        let move = -1;
 
-    checkNearDeath(playerMove) {
-        const opponentMoves = this.orchInst.PlacedMovesOpponent(this.piece);
         for (const con of this.playerWinCons) {
-            for (let n = 0; n < 3; n++) {
-                const pair = con[n];
-                if (pair === playerMove) {
-                    for (const move of opponentMoves) {
-                        if (move === con[(n + 1) % 3]) {
-                            if (this.orchInst.state[con[(n + 2) % 3]] !== this.pieceVal) {
-                                this.nextmove = con[(n + 2) % 3];
-                                return;
-                            }
-                        }
-                        if (move === con[(n + 2) % 3]) {
-                            if (this.orchInst.state[con[(n + 1) % 3]] !== this.pieceVal) {
-                                this.nextmove = con[(n + 1) % 3];
-                                return;
-                            }
-                        }
-                    }
-                }
+            if(con.length == 1){
+                move =  con[0]
             }
         }
+
+        if(move == -1){
+            return move
+        }
+
+        this.orchInst.PlaceMove(move, this.piece);
+
+        // update computer win cons
+
+        for (let wincon of this.compWinCons) {
+            if (wincon.includes(move)){
+                wincon.splice(wincon.indexOf(move), 1);
+            }
+        }
+
+        // update player win cons
+        for (let player_ind = this.playerWinCons.length; player_ind > 0; player_ind--) {
+            if (wincon.includes(move)){
+                this.playerWinCons.splice(player_ind, 1);
+            }
+        }
+
+        return move
     }
 
     checkImmediateWin(){
-        const availMoves = this.orchInst.AvailableMoves();
-        if (availMoves.length === 0) {
-            return -1;
-        }
-
+        let move = -1;
         for (const con of this.compWinCons) {
             if (con.length === 1) {
-                if(this.orchInst.PlaceMove(con[0], this.piece)){
-                    return con[0];
-                }else{
-                    this.updateOpponentMoves(con[0]);
-                };
+                move = con[0];
             }
         }
 
-        return -1
+        if(move == -1){
+            return move
+        }
+
+        this.orchInst.PlaceMove(move, this.piece);
+
+        // update computer win cons
+
+        for (let wincon of this.compWinCons) {
+            if (wincon.includes(move)){
+                wincon.splice(wincon.indexOf(move), 1);
+            }
+        }
+
+        // update player win cons
+        for (let player_ind = this.playerWinCons.length; player_ind > 0; player_ind--) {
+            if (wincon.includes(move)){
+                this.playerWinCons.splice(player_ind, 1);
+            }
+        }
+
+        return move
     }
+
+    // minimax algo
 
     makeMove() {
         const availMoves = this.orchInst.AvailableMoves();
@@ -134,27 +139,13 @@ export default class ComputerPlayer {
             return -1;
         }
 
-        if (this.nextmove >= 0) {
-            const move = this.nextmove;
-            if(this.orchInst.PlaceMove(move, this.piece)){
-                this.nextmove = -1;
-                return move;
-            }else{
-                this.updateOpponentMoves(con[0]);
-            };
-            this.nextmove = -1;
-        }
-
         const scores = new Array(availMoves.length).fill(0);
 
-        for (let g = 0; g < availMoves.length; g++) {
-            const move = availMoves[g];
-            for (let f = 0; f < this.compWinCons.length; f++) {
-                const con = this.compWinCons[f];
-                for (const point of con) {
-                    if (point === move) {
-                        scores[g]++;
-                    }
+        for (let move_ind = 0; move_ind < availMoves.length; move_ind++){
+            let move = availMoves[move_ind];
+            for (let con of this.compWinCons) {
+                if(con.includes(move)){
+                    scores[move_ind]++;
                 }
             }
         }
@@ -166,21 +157,20 @@ export default class ComputerPlayer {
 
         this.orchInst.PlaceMove(availMoves[maxAt], this.piece);
 
-        const newWinCons = [];
-        let newWinConCounter = 0;
-        for (let f = 0; f < this.compWinCons.length; f++) {
-            const wincon = this.compWinCons[f];
-            const temp = [];
-            let counter = 0;
-            for (const point of wincon) {
-                if (point !== availMoves[maxAt]) {
-                    temp[counter++] = point;
-                }
+        // update computer win cons
+
+        for (let wincon of this.compWinCons) {
+            if (wincon.includes(availMoves[maxAt])){
+                wincon.splice(wincon.indexOf(availMoves[maxAt]), 1);
             }
-            newWinCons[newWinConCounter++] = temp;
         }
 
-        this.compWinCons = newWinCons;
+        // update player win cons
+        for (let player_ind = this.playerWinCons.length; player_ind > 0; player_ind--) {
+            if (wincon.includes(availMoves[maxAt])){
+                this.playerWinCons.splice(player_ind, 1);
+            }
+        }
 
         return availMoves[maxAt];
     }
@@ -207,7 +197,5 @@ export default class ComputerPlayer {
             [3, 4, 5],
             [6, 7, 8],
         ];
-
-        this.nextmove = -1;
     }
 }
