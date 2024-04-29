@@ -40,10 +40,8 @@ export default class Orchestrator {
             }
             switch (sum) {
                 case 3:
-                    this.won = true;
                     return 1; // x won
                 case 12:
-                    this.won = true;
                     return 2; // o won
             }
         }
@@ -56,6 +54,7 @@ export default class Orchestrator {
                 return false;
             }
         }
+        this.won = true;
         return true;
     }
 

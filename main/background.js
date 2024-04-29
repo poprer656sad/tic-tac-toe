@@ -5,6 +5,12 @@ import Orchestrator from "./orchestrator";
 import ComputerPlayer from "./game_logic";
 import * as fs from "fs";
 
+const code_key = {
+  0: "",
+  1: "x",
+  4: "o"
+}
+
 
 (async () => {
   await app.whenReady();
@@ -29,19 +35,7 @@ var player_piece = "";
 
 ipcMain.on("player_move", (event, arg) => {
   if(orchestrator.won){
-    var winner;
-    switch(orchestrator.CheckWin()){
-      case 0:
-        winner = "";
-        break;
-      case 1:
-        winner = "x";
-        break;
-      case 4:
-        winner = "o";
-        break;
-    };
-    event.reply("won", winner)
+    event.reply("won", code_key[orchestrator.CheckWin()])
     return
   }
   orchestrator.PlaceMove(arg, player_piece);
