@@ -35,64 +35,25 @@ var player_piece = "";
 
 ipcMain.on("player_move", (event, arg) => {
   if(orchestrator.won){
-    event.reply("won", code_key[orchestrator.CheckWin()])
+    event.reply("won", code_key[orchestrator.CheckWin()]);
     return
   }
   orchestrator.PlaceMove(arg, player_piece);
-  event.reply("update_positions", orchestrator.state.map(val => {
-    switch(val){
-      case 0:
-        return ""
-      case 1:
-        return "x"
-      case 4:
-        return "o"
-    }
-  }));
-  if (orchestrator.CheckWin() || orchestrator.checkTie()){
-    var winner;
-    switch(orchestrator.CheckWin()){
-      case 0:
-        winner = "";
-        break;
-      case 1:
-        winner = "x";
-        break;
-      case 4:
-        winner = "o";
-        break;
-    };
-    event.reply("won", winner)
+  event.reply("update_positions", orchestrator.state.map(val => {code_key[val]}));
+
+  orchestrator.checkTie();
+  if (orchestrator.won){
+    event.reply("won", code_key[orchestrator.CheckWin()]);
     return;
   }
+  
   let computer_move = computer_player.Turn(arg);
-  orchestrator.PlaceMove(computer_move, computer_player.piece);
+  // orchestrator.PlaceMove(computer_move, computer_player.piece);
 
-  event.reply("update_positions", orchestrator.state.map(val => {
-    switch(val){
-      case 0:
-        return ""
-      case 1:
-        return "x"
-      case 4:
-        return "o"
-    }
-  }));
-
-  if (orchestrator.CheckWin() || orchestrator.checkTie()){
-    var winner;
-    switch(orchestrator.CheckWin()){
-      case 0:
-        winner = "";
-        break;
-      case 1:
-        winner = "x";
-        break;
-      case 4:
-        winner = "o";
-        break;
-    };
-    event.reply("won", winner)
+  event.reply("update_positions", orchestrator.state.map(val => {code_key[val]}));
+  orchestrator.checkTie();
+  if (orchestrator.won){
+    event.reply("won", code_key[orchestrator.CheckWin()]);
     return;
   }
 })

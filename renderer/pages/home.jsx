@@ -29,11 +29,6 @@ export default function HomePage() {
             setCurrentBoard(pos_in);
         });
 
-        window.ipc.on("set_player_move", (pos_in)=>{
-            console.log("recieved update", pos_in);
-            setCurrentBoard(pos_in);
-        });
-
         window.ipc.on("won", (winner)=>{
             console.log("recieved winner", winner);
             setWinner(winner);
@@ -95,8 +90,11 @@ export default function HomePage() {
                     SAVE
                 </div>
                 {
-                    won && <div className='pl-12'>
-                        GAME FINISHED
+                    winner && winner.length == 0 ? <div className='pl-12 text-xl'>
+                        WINNER IS {winner}
+                        </div>:
+                        <div className='pl-12 text-xl'>
+                          TIE
                         </div>
                 }
             </div>
