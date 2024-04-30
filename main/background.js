@@ -16,7 +16,7 @@ const code_key = {
   await app.whenReady();
 
   const mainWindow = createWindow("main", {
-    width: 1520,
+    width: 1200,
     height: 980,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -42,9 +42,9 @@ ipcMain.on("BOARD:PLAYER_MOVE", (event, arg) => {
   orchestrator.PlaceMove(arg, player_piece);
   event.reply("UPDATE:POSITIONS", orchestrator.state.map(val => code_key[val]));
 
-  orchestrator.checkTie();
+  orchestrator.checkTie() || orchestrator.CheckWin();
   if (orchestrator.won){
-    event.reply("", code_key[orchestrator.CheckWin()]);
+    event.reply("UPDATE:OVER", code_key[orchestrator.CheckWin()]);
     return;
   }
   
@@ -53,7 +53,7 @@ ipcMain.on("BOARD:PLAYER_MOVE", (event, arg) => {
   // orchestrator.PlaceMove(computer_move, computer_player.piece);
 
   event.reply("UPDATE:POSITIONS", orchestrator.state.map(val => code_key[val]));
-  orchestrator.checkTie();
+  orchestrator.checkTie() || orchestrator.CheckWin();
   if (orchestrator.won){
     event.reply("UPDATE:OVER", code_key[orchestrator.CheckWin()]);
     return;
@@ -108,4 +108,9 @@ ipcMain.on("GAME:SAVE", (event, arg) => {
         won: orchestrator.won
     }
   ))
+})
+
+ipcMain.on("GAME:RESET", (event, arg) => {
+  orchestrator = new Orchestrator();
+  computer_player = new ComputerPlayer(orchestrator);
 })

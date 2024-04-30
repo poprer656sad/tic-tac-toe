@@ -1,8 +1,8 @@
 export default function PieceModal(props){
     return <div>
-            <div className='z-20 w-screen h-screen bg-blur grid grid-col place-content-center flex flex-row gap-6'>
-                <button onClick={()=>{props.playerChoosePiece("x")}}>X</button>
-                <button onClick={()=>{props.playerChoosePiece("o")}}>O</button>
+            <div className='w-screen h-screen grid grid-rows-2 items-center'>
+                <div className="w-4" onClick={()=>{props.playerChoosePiece("x")}}>X</div>
+                <div className="w-4" onClick={()=>{props.playerChoosePiece("o")}}>O</div>
             </div>
     </div>
 }

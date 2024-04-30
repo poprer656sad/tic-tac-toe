@@ -35,6 +35,8 @@ export default class ComputerPlayer {
         if (this.orchInst.AvailableMoves().length == 0){
             return -1
         }
+        console.log(this.playerWinCons);
+        console.log(this.compWinCons);
         move = this.checkImmediateWin();
         if (move != -1){
             return move
@@ -49,18 +51,20 @@ export default class ComputerPlayer {
     }
 
     updateOpponentMoves(pair) {
-        // update computer win cons
+        // update player win cons
 
         for (let wincon of this.playerWinCons) {
+            
             if (wincon.includes(pair)){
                 wincon.splice(wincon.indexOf(pair), 1);
             }
         }
 
-        // update player win cons
-        for (let player_ind = this.compWinCons.length; player_ind > 0; player_ind--) {
+        // update computer win cons
+        for (let comp_ind = this.compWinCons.length-1; comp_ind >= 0; comp_ind--) {
+            let wincon = this.compWinCons[comp_ind];
             if (wincon.includes(pair)){
-                this.compWinCons.splice(player_ind, 1);
+                this.compWinCons.splice(comp_ind, 1);
             }
         }
     }
@@ -90,7 +94,8 @@ export default class ComputerPlayer {
         }
 
         // update player win cons
-        for (let player_ind = this.playerWinCons.length; player_ind > 0; player_ind--) {
+        for (let player_ind = this.playerWinCons.length-1; player_ind >= 0; player_ind--) {
+            let wincon = this.playerWinCons[player_ind];
             if (wincon.includes(move)){
                 this.playerWinCons.splice(player_ind, 1);
             }
@@ -122,7 +127,8 @@ export default class ComputerPlayer {
         }
 
         // update player win cons
-        for (let player_ind = this.playerWinCons.length; player_ind > 0; player_ind--) {
+        for (let player_ind = this.playerWinCons.length-1; player_ind >= 0; player_ind--) {
+            let wincon = this.playerWinCons[player_ind];
             if (wincon.includes(move)){
                 this.playerWinCons.splice(player_ind, 1);
             }
@@ -166,7 +172,8 @@ export default class ComputerPlayer {
         }
 
         // update player win cons
-        for (let player_ind = this.playerWinCons.length; player_ind > 0; player_ind--) {
+        for (let player_ind = this.playerWinCons.length-1; player_ind >= 0; player_ind--) {
+            let wincon = this.playerWinCons[player_ind];
             if (wincon.includes(availMoves[maxAt])){
                 this.playerWinCons.splice(player_ind, 1);
             }

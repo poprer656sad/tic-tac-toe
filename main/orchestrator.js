@@ -40,9 +40,11 @@ export default class Orchestrator {
             }
             switch (sum) {
                 case 3:
+                    this.won = true;
                     return 1; // x won
                 case 12:
-                    return 2; // o won
+                    this.won = true;
+                    return 4; // o won
             }
         }
         return 0; // no winner
@@ -50,7 +52,7 @@ export default class Orchestrator {
 
     checkTie() {
         for (const val of this.state) {
-            if (val === 0) {
+            if (val == 0) {
                 return false;
             }
         }
